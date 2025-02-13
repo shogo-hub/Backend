@@ -1,0 +1,11 @@
+#Base image
+FROM python:3.12
+#Set work directory
+WORKDIR /src
+#Copy host to container
+COPY . /src
+#Install necessary package
+RUN pip install --no-cache-dir -r requirements.txt
+#Execute application
+CMD ["tail", "-f", "/dev/null"]
+
