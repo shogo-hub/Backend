@@ -1,0 +1,2 @@
+class ReadAndParseEnvException(Exception):
+    pass
