@@ -1,9 +1,7 @@
 from .Programs.CodeGeneration import CodeGeneration
 from .Programs.Migrate import Migration
 
-def registry():
-    return [
-        Migration,
-        CodeGeneration,
-    ]
-
+commands = {
+    Migration.get_alias(): Migration,
+    CodeGeneration.get_alias(): CodeGeneration,
+}
