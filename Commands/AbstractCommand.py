@@ -5,65 +5,74 @@ from abc import ABC, abstractmethod
 
 class AbstractCommand(Command):
     """Abstract command class for all of command"""
-    value: str = None
-    args_map: dict = {}
-    alias: str = None
-    required_command_value: bool = False
+    
 
     def __init__(self):
         self.set_up_args_map()
+        self.value: str = None
+        self.argsMap: dict = {}
+        self.alias: str = None
+        self.requiredCommandValue: bool = False
 
-    def set_up_args_map(self):
+    def setUpArgsMap(self):
+        """Create map out of command"""
+
+        #STEP1: Handling the Command Value
         args = sys.argv
-        start_index = None
-
         try:
-            start_index = args.index(self.get_alias()) + 1
+            startIndex = args.index(self.getAlias()) +1
         except ValueError:
-            raise Exception(f"Could not find alias {self.get_alias()}")
+            raise Exception(f"Could not find alias {self.getAlias()}")
+        startIndex = self.getAlias()
 
-        shell_args = {}
 
-        if start_index == len(args) or args[start_index][0] == '-':
+        #STEP2: Parsing Shell Arguments
+        #Check if command is valid shape
+        shellArgs = {}
+        if not (startIndex < len(args) and args[startIndex][0] != '-'):
             if self.is_command_value_required():
-                raise Exception(f"{self.get_alias()}'s value is required.")
+                raise Exception(f"{self.getAlias()}'s value is required.")
         else:
-            self.args_map[self.get_alias()] = args[start_index]
-            start_index += 1
-
-        for i in range(start_index, len(args)):
+            self.argsMap[self.getAlias()] = args[startIndex]
+            startIndex += 1
+        #Map optional command
+        for i in range(startIndex, len(args)):
             arg = args[i]
-            if arg.startswith('--'):
+
+            if arg[:2] == '--':
                 key = arg[2:]
-            elif arg.startswith('-'):
+            elif arg[0] == '-':
                 key = arg[1:]
             else:
                 raise Exception('Options must start with - or --')
 
-            shell_args[key] = True
+            shellArgs[key] = True
 
-            if i + 1 < len(args) and not args[i + 1].startswith('-'):
-                shell_args[key] = args[i + 1]
+            if i + 1 < len(args) and args[i + 1][0] != '-':
+                shellArgs[key] = args[i + 1]
                 i += 1
 
+
+        #STEP3: Check if shellArgs expected shape or not
         for argument in self.get_arguments():
-            arg_string = argument.get_argument()
+            #Get expected option
+            argString = argument.get_argument()
             value = None
 
-            if argument.is_short_allowed() and arg_string[0] in shell_args:
-                value = shell_args[arg_string[0]]
-            elif arg_string in shell_args:
-                value = shell_args[arg_string]
+            if argument.is_short_allowed() and argString[0] in shellArgs:
+                value = shellArgs[argString[0]]
+            elif argString in shellArgs:
+                value = shellArgs[argString]
 
             if value is None:
                 if argument.is_required():
-                    raise Exception(f"Could not find the required argument {arg_string}")
+                    raise Exception(f'Could not find the required argument {argString}')
                 else:
-                    self.args_map[arg_string] = False
+                    self.argsMap[argString] = False
             else:
-                self.args_map[arg_string] = value
+                self.argsMap[argString] = value
 
-        self.log(json.dumps(self.args_map))
+        self.log(json.dumps(self.argsMap))
 
     @staticmethod
     def get_help() -> str:
@@ -89,18 +98,18 @@ class AbstractCommand(Command):
         return help_string
 
     @staticmethod
-    def get_alias() -> str:
-        return static.alias if static.alias else static.__name__
+    def getAlias() -> str:
+        return self.alias if self.alias else self.__name__
 
     @staticmethod
     def is_command_value_required() -> bool:
-        return static.required_command_value
+        return self.requiredCommandValue
 
     def get_command_value(self) -> str:
-        return self.args_map.get(self.get_alias(), "")
+        return self.argsMap.get(self.get_alias(), "")
 
     def get_argument_value(self, arg: str):
-        return self.args_map.get(arg, False)
+        return self.argsMap.get(arg, False)
 
     def log(self, info: str):
         print(info)
