@@ -6,61 +6,67 @@ from typing import List, Optional
 import os
 import glob
 
-class Migration:
+class Migration(AbstractCommand):
     """Manage migration"""
     #STEP0: Set alias for command prompt
     alias = 'migrate'
 
     def __init__(self,arguments:dict):
         self.arguments = arguments
-        self.mysql = MySQLWrapper()  # Initialize MySQLWrapper here
-
+        
     @staticmethod
-    def getArguments():
+    def getArguments()->list:
         """Get argument of roll back"""
         return [
             Argument('rollback').description('Roll backwards. An integer n may also be provided to rollback n times.').required(False).allowAsShort(True),
-            Argument("init").description("Create the migrations table if it doesn't exist.").required(False).allowAsShort(True),
+            Argument('init').description("Create the migrations table if it doesn't exist.").required(False).allowAsShort(True),
         ]
-    #STEP0: Manage out of command
-    def execute(self):
-        """Based on Command manage migration"""
-
+    
+    def execute(self)->int:
+        """Execute migration based on command"""
+        #STEP1 : Get mapped command of rollback
         rollback = self.getArgumentValue('rollback')
-        
-        #+++If command is creating migration table+++
+
+        #If state is init, create table from scratch
         if self.getArgumentValue("init"):
             self.createMigrationTable()
 
-        if rollback is False:
+        #STEP2 : execute command
+        if rollback is None:
             self.log("Starting migration......")
             self.migrate()
         else:
-            # If rollback is set, either as True or with an integer value
-            rollback = 1 if rollback is True else int(rollback)
+            rollbackNum = 1 if rollback is True else int(rollback)
             self.log("Running rollback....")
-            for i in range(rollback):
-                self.rollback()
-        return 0  
 
-    #STEP1: Rollback
-    def rollback(self):
-        self.log("Rolling back migration...\n")
+            self.rollback(rollbackNum)
+        return 0    
 
+    def createMigrationsTable(self):
+        """Create scratch migration table"""
 
-    def log(self,message:str)->None:
-        print(message)
+        print("Creating migrations table if necessary...")
+        mysqli = MySQLWrapper()        
+        result = mysqli.query("""
+            CREATE TABLE IF NOT EXISTS migrations (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                filename VARCHAR(255) NOT NULL
+            );
+        """)
 
+        if result is False:  # Check for query failure
+            raise Exception("Failed to create migration table.")
 
-        
+        print("Done setting up migration tables.")
+    
     #STEP2: Migrate creation
     def migrate(self)->None:
         """Implement migration"""
 
         #Step1:Get all of migration info
-        last_migration = self.get_last_migration()
-        all_migrations = self.get_all_migration_files()
-        start_index = all_migrations.index(last_migration) + 1 if last_migration else 0
+        lastMigration = self.getLastMigration()
+        all_migrations = self.getAllMigrationFiles()
+        startIndex = all_migrations.index(lastMigration) + 1 if lastMigration else 0
 
         #Execute the migration which is not implemented yet
         for fileName in all_migrations:
@@ -77,10 +83,15 @@ class Migration:
             if not queries:
                 raise Exception("Must have queries to run for ." + migrationClass.__name__)
 
-            self.process_queries(queries)
-            self.insert_migration(fileName)
+            self.processQueries(queries)
+            self.insertMigration(fileName)
 
-        self.log("Migration ended...\n")
+        self.log("Migration ended...\n")   
+    
+
+    def log(self,message:str)->None:
+        print(message)       
+    
 
     #STEP3 Create migration table
     def createMigrationTable(self):
@@ -103,7 +114,7 @@ class Migration:
 
         self.log("Done setting up migration tables.")
 
-    #subClass
+    #subClass------------------------------------------------------------------------------------------------
 
     def getClassNameFromMigrationFilename(self,filename:str)->str:
         match = re.search(r'([^_]+)\.py$', filename)
@@ -112,9 +123,11 @@ class Migration:
         else:
             raise Exception("Unexpected migration filename format: " + filename)
 
-    def getLastMigration(self) -> Optional[str]:
+    def getLastMigration(self) -> str:
+        """Get last migration table"""
+        mysqli = MySQLWrapper()
         query = "SELECT filename FROM migrations ORDER BY id DESC LIMIT 1"
-        result = self.mysql.query(query)
+        result = mysqli.query(query)
 
         if result and result.num_rows > 0:
             row = result.fetch_assoc()
@@ -123,25 +136,33 @@ class Migration:
         return None
     
 
-    def getAllMigrationFiles(self, order: str = 'asc') -> List[str]:
+    def getAllMigrationFiles(self, order: str = 'asc') ->list:
+        """Get list of all of migration file path"""
+
         directory = os.path.join(os.path.dirname(__file__), "../../Database/Migrations") # Use os.path
         self.log(directory)
-        all_files = glob.glob(directory + "/*.php")  # Use glob
-
-        all_files.sort(reverse=(order == 'desc')) # Use list.sort with reverse argument
-
-        return all_files
+        allFiles = glob.glob(directory + "/*.py")
+        #Sort file path by day 
+        allFiles.sort(reverse=(order == 'desc'))
+        return allFiles
     
     def processQueries(self, queries: List[str]) -> None:
+        """Process multiple querries"""
+
+        mysqli = MySQLWrapper()
+
         for query in queries:
-            result = self.mysql.query(query)
+            result = mysqli.query(query)
             if result is False:
                 raise Exception(f"Query {{{query}}} failed.")
             else:
                 self.log('Ran query: ' + query)
 
-    def insert_migration(self, filename: str) -> None:
-        statement = self.mysql.prepare("INSERT INTO migrations (filename) VALUES (?)")
+    def insertMigration(self, filename: str) -> None:
+        """Insert migration record into the 'Migration table' """
+
+        mysqli = MySQLWrapper()
+        statement = mysqli.prepare("INSERT INTO migrations (filename) VALUES (?)")
         if not statement:
             raise Exception(f"Prepare failed: ({self.mysql.errno}) {self.mysql.error}")
 
@@ -149,5 +170,8 @@ class Migration:
 
         if not statement.execute():
             raise Exception(f"Execute failed: ({statement.errno}) {statement.error}")
+        statement.close()
 
 
+    def rollback(self,times=1):
+        self.log(f"Rolling back {times} migration(s)...")

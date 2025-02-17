@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List ,Union
 
 class Command(ABC):
-    """Interface for all commands to have """
-
+    """Interface for all commands to have"""
 
     @staticmethod
     @abstractmethod
-    def get_alias() -> str:
+    def getAlias() -> str:
         """
         Return the alias for the command.
         """
@@ -15,15 +14,15 @@ class Command(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_arguments() -> List['Argument']:
+    def getArguments() -> list:  # Changed to camelCase
         """
         Return a list of Argument objects.
         """
         pass
-    
+
     @staticmethod
     @abstractmethod
-    def get_help() -> str:
+    def getHelp() -> str:  # Changed to camelCase
         """
         Return the help text for the command.
         """
@@ -31,14 +30,14 @@ class Command(ABC):
 
     @staticmethod
     @abstractmethod
-    def is_command_value_required() -> bool:
+    def isCommandValueRequired() -> bool:  # Changed to camelCase
         """
         Return True if command value is required, False otherwise.
         """
         pass
 
     @abstractmethod
-    def get_argument_value(self, arg: str) -> bool or str:
+    def getArgumentValue(self, arg: str) -> Union[bool,str]:  # Changed to camelCase
         """
         Return the argument value as a string if it exists,
         or True if the parameter is present, or False if the argument is not set.

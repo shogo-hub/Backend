@@ -2,18 +2,20 @@ from .Command import Command
 import sys
 import json
 from abc import ABC, abstractmethod
+from .Argument import Argument
 
 class AbstractCommand(Command):
     """Abstract command class for all of command"""
-    
+    #Initialize class value
+    alias: str = None
+    value: str = None
+    argsMap: dict = {}
+    requiredCommandValue: bool = False
 
     def __init__(self):
-        self.set_up_args_map()
-        self.value: str = None
-        self.argsMap: dict = {}
-        self.alias: str = None
-        self.requiredCommandValue: bool = False
-
+        #Map command line
+        self.setUpArgsMap()     
+        
     def setUpArgsMap(self):
         """Create map out of command"""
 
@@ -30,7 +32,7 @@ class AbstractCommand(Command):
         #Check if command is valid shape
         shellArgs = {}
         if not (startIndex < len(args) and args[startIndex][0] != '-'):
-            if self.is_command_value_required():
+            if self.isCommandValueRequired():
                 raise Exception(f"{self.getAlias()}'s value is required.")
         else:
             self.argsMap[self.getAlias()] = args[startIndex]
@@ -54,18 +56,18 @@ class AbstractCommand(Command):
 
 
         #STEP3: Check if shellArgs expected shape or not
-        for argument in self.get_arguments():
+        for argument in self.getArguments():
             #Get expected option
-            argString = argument.get_argument()
+            argString = argument.getArgument()
             value = None
 
-            if argument.is_short_allowed() and argString[0] in shellArgs:
+            if argument.isShortAllowed() and argString[0] in shellArgs:
                 value = shellArgs[argString[0]]
             elif argString in shellArgs:
                 value = shellArgs[argString]
 
             if value is None:
-                if argument.is_required():
+                if argument.isRequired():
                     raise Exception(f'Could not find the required argument {argString}')
                 else:
                     self.argsMap[argString] = False
@@ -75,44 +77,51 @@ class AbstractCommand(Command):
         self.log(json.dumps(self.argsMap))
 
     @staticmethod
-    def get_help() -> str:
-        help_string = f"Command: {static.get_alias()}"
-        if static.is_command_value_required():
+    def getHelp() -> str:
+        help_string = f"Command: {AbstractCommand.getAlias()}"
+        if AbstractCommand.isCommandValueRequired():
             help_string += " {value}"
         help_string += "\n"
 
-        arguments = static.get_arguments()
+        arguments:Argument = AbstractCommand.getArguments()
         if not arguments:
             return help_string
 
         help_string += "Arguments:\n"
 
-        for argument in arguments:
-            help_string += f"  --{argument.get_argument()}"
-            if argument.is_short_allowed():
-                help_string += f" (-{argument.get_argument()[0]})"
-            help_string += f": {argument.get_description()}"
-            help_string += " (Required)" if argument.is_required() else " (Optional)"
+        for i in range(len(arguments)):
+            argument:Argument = arguments[i]
+            help_string += f"  --{argument.getArgument()}"
+            if argument.isShortAllowed():
+                help_string += f" (-{argument.getArgument()[0]})"
+            help_string += f": {argument.getDescription()}"
+            help_string += " (Required)" if argument.isRequired() else " (Optional)"
             help_string += "\n"
-
         return help_string
 
     @staticmethod
     def getAlias() -> str:
-        return self.alias if self.alias else self.__name__
+        """Return alis , else class name"""
+        return AbstractCommand.alias if AbstractCommand.alias else AbstractCommand.__name__
 
     @staticmethod
-    def is_command_value_required() -> bool:
-        return self.requiredCommandValue
+    def isCommandValueRequired() -> bool:
+        return AbstractCommand.requiredCommandValue
 
-    def get_command_value(self) -> str:
-        return self.argsMap.get(self.get_alias(), "")
+    def getCommandValue(self) -> str:
+        return AbstractCommand.argsMap.get(self.getAlias(), "")
 
-    def get_argument_value(self, arg: str):
+    def getArgumentValue(self, arg: str):
+        """Return mapped argument"""
         return self.argsMap.get(arg, False)
 
     def log(self, info: str):
         print(info)
+
+    @staticmethod
+    @abstractmethod
+    def getArguments()->list:
+        """Return arguments"""
 
     @abstractmethod
     def execute(self) -> int:

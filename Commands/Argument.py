@@ -1,21 +1,19 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-
-
 class Argument:
     """Define the argument for the command to use"""
     def __init__(self, argument: str):
         self.argument = argument
         self.description = ''
         self.required = True
-        self.allow_as_short = False
+        self.allowAsShort = False  # Changed to camelCase
 
-    def get_argument(self) -> str:
+    def getArgument(self) -> str:  # Changed to camelCase
         """Returns the argument name."""
         return self.argument
 
-    def get_description(self) -> str:
+    def getDescription(self) -> str:  # Changed to camelCase
         """Returns the description of the argument."""
         return self.description
 
@@ -24,7 +22,7 @@ class Argument:
         self.description = description
         return self
 
-    def is_required(self) -> bool:
+    def isRequired(self) -> bool:  # Changed to camelCase
         """Returns whether the argument is required."""
         return self.required
 
@@ -33,11 +31,11 @@ class Argument:
         self.required = required
         return self
 
-    def is_short_allowed(self) -> bool:
+    def isShortAllowed(self) -> bool:  # Changed to camelCase
         """Returns whether the argument can be used as a short form."""
-        return self.allow_as_short
+        return self.allowAsShort  # Use the camelCase version
 
-    def allow_as_short(self, allow_as_short: bool) -> 'Argument':
+    def allowAsShort(self, allow_as_short: bool) -> 'Argument':  # Changed to camelCase
         """Sets whether the argument can be used as a short form and returns the current instance."""
-        self.allow_as_short = allow_as_short
+        self.allowAsShort = allow_as_short  # Changed to camelCase
         return self
