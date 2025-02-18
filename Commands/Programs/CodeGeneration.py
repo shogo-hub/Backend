@@ -7,7 +7,7 @@ from datetime import datetime
 
 
 class CodeGeneration(AbstractCommand):
-    """Generate """
+    """Generate"""
     # Set the alias for the command
     alias = 'code-gen'
     requiredCommandValue = True
@@ -22,14 +22,14 @@ class CodeGeneration(AbstractCommand):
     #Execute
     def execute(self):
         #Get command
-        codeGenType = self.get_command_value()
+        codeGenType = self.getCommandValue()#get_command_value()
         #Create migration ,if migration
         self.log(f'Generating code for.......{codeGenType}')
         #Implement rollback , if rollback
         if codeGenType =="migration":
-            migrationName = self.get_argument_value(arg="name")
+            migrationName = self.getArgumentValue(arg="name")
             self.generateMigrationFile(migrationName)
-    #Generate migration file
+        #Generate migration file
 
     def generateMigrationFile(self, migrationName: str) -> None:
         filename = f"{datetime.now().strftime('%Y-%m-%d')}_{int(time.time())}_{migrationName}.py"
