@@ -5,7 +5,6 @@ import time
 from datetime import datetime
 
 
-
 class CodeGeneration(AbstractCommand):
     """Generate"""
     # Set the alias for the command
@@ -14,11 +13,11 @@ class CodeGeneration(AbstractCommand):
 
     #Get argument
     @staticmethod
-    def getArguments():
+    def getArguments()->list:
         return [
             Argument('name').description('Name of the file that is to be generated.').required(False),
         ]
-    
+
     #Execute
     def execute(self):
         #Get command
@@ -63,7 +62,43 @@ class {className}(SchemaMigration):
     def pascalCase(self, string: str) -> str:
         return ''.join(word.capitalize() for word in string.split('_'))
 
+
+    #NOTE:over ride below method because of nature of python (cannot overwrite to access concrete class variable)    
+    @staticmethod
+    def getHelp() -> str:
+        help_string = f"Command: {CodeGeneration.getAlias()}"
+        if CodeGeneration.isCommandValueRequired():
+            help_string += " {value}"
+        help_string += "\n"
+
+        arguments:Argument = CodeGeneration.getArguments()
+        if not arguments:
+            return help_string
+
+        help_string += "Arguments:\n"
+
+        for i in range(len(arguments)):
+            argument:Argument = arguments[i]
+            help_string += f"  --{argument.getArgument()}"
+            if argument.isShortAllowed():
+                help_string += f" (-{argument.getArgument()[0]})"
+            help_string += f": {argument.getDescription()}"
+            help_string += " (Required)" if argument.isRequired() else " (Optional)"
+            help_string += "\n"
+        return help_string
+
+    @staticmethod
+    def getAlias() -> str:
+        """Return alis , else class name"""
+        return CodeGeneration.alias if CodeGeneration.alias else CodeGeneration.__name__
     
+    @staticmethod
+    def isCommandValueRequired() -> bool:
+        return CodeGeneration.requiredCommandValue
+
+    def getCommandValue(self) -> str:
+        return CodeGeneration.argsMap.get(self.getAlias(), "")  
+
     
     
 

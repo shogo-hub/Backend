@@ -1,10 +1,12 @@
 from ..Argument import Argument
 from ..AbstractCommand import AbstractCommand
-from ...Database.MySQLWrapper import MySQLWrapper
+from Database.MySQLWrapper import MySQLWrapper
 import re
 from typing import List, Optional
 import os
 import glob
+
+
 
 class Migration(AbstractCommand):
     """Manage migration"""
@@ -175,3 +177,40 @@ class Migration(AbstractCommand):
 
     def rollback(self,times=1):
         self.log(f"Rolling back {times} migration(s)...")
+
+    #NOTE:over ride below method because of nature of python (cannot overwrite to access concrete class variable)    
+    @staticmethod
+    def getHelp() -> str:
+        help_string = f"Command: {Migration.getAlias()}"
+        if Migration.isCommandValueRequired():
+            help_string += " {value}"
+        help_string += "\n"
+
+        arguments:Argument = Migration.getArguments()
+        if not arguments:
+            return help_string
+
+        help_string += "Arguments:\n"
+
+        for i in range(len(arguments)):
+            argument:Argument = arguments[i]
+            help_string += f"  --{argument.getArgument()}"
+            if argument.isShortAllowed():
+                help_string += f" (-{argument.getArgument()[0]})"
+            help_string += f": {argument.getDescription()}"
+            help_string += " (Required)" if argument.isRequired() else " (Optional)"
+            help_string += "\n"
+        return help_string
+    
+    @staticmethod
+    def getAlias() -> str:
+        """Return alis , else class name"""
+        return Migration.alias if Migration.alias else Migration.__name__
+
+    @staticmethod
+    def isCommandValueRequired() -> bool:
+        return Migration.requiredCommandValue
+
+    def getCommandValue(self) -> str:
+        return Migration.argsMap.get(self.getAlias(), "")
+

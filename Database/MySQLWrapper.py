@@ -1,6 +1,6 @@
 import mysql.connector
 from mysql.connector import Error
-from ..Helpers.Setting import Settings  # Assuming you have a Settings class similar to the one described earlier.
+from Helpers.Setting import Settings  # Assuming you have a Settings class similar to the one described earlier.
 
 class MySQLWrapper:
     def __init__(self, hostname='localhost', username=None, password=None, database=None, port=None, socket=None):

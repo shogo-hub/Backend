@@ -9,17 +9,20 @@ import os
 
 def autoload(className):
     """Autoload classes from the 'Commands' directory."""
-
-    filePath = os.path.join(os.path.dirname(__file__), 'Commands', className.replace('\\', '/') + '.py') # Changed to camelCase
+    #STEP1 :  get file name
+    #
+    filePath = os.path.join(os.path.dirname(__file__), 'Commands', className) # Changed to camelCase
     if os.path.exists(filePath): # Changed to camelCase
-        moduleName = '.'.join(['Commands', className.split('\\')[-1]]) # Changed to camelCase
+        moduleName = str(className).rsplit('.', 1)[0]
         try:
             module = importlib.import_module(moduleName) # Changed to camelCase
-            return getattr(module, className.split('\\')[-1]) # Changed to camelCase
-        except Exception as e:
-            print(f"Error loading class {className}: {e}") # Changed to camelCase
-            return None
-    return None
+            return getattr(module, className.rsplit('.', 1)[1]) #Class object
+        except (ImportError, AttributeError):
+            raise Exception(f"Failed to import class: {className} from file: {filePath}")
+    else:
+        raise Exception(f"File not found: {filePath}")
+    
+
 
 def main()->int:
     """
@@ -30,37 +33,31 @@ def main()->int:
     """
     
     try:
-        commands = {}
-        with open("Commands/registry.php", "r") as f: # Assuming registry.php lists classes
-            for line in f:
-                className = line.strip() # Changed to camelCase
-                if className: # Changed to camelCase
-                    cls = autoload(className) # Changed to camelCase
-                    if cls: # Check successful load
-                        commands[cls.getAlias()] = cls
+        from Commands.registry import commands
+        registryCommands = commands
+    except ImportError:
+        print("registry.py not found.")
+        exit(1)
+    #Get alias from CLI
+    commandalias = sys.argv[1]
+    #STEP1 :  Parse command
 
-        inputCommand = sys.argv[1] if len(sys.argv) > 1 else None # Changed to camelCase
+    #STEP2 : iterate class in registry
+    for alias ,commands in registryCommands.items():
+        #If sys alias is in registry
+        if commandalias == alias:
+            CommandObject = commands()
+            #If sys is help
+            if '--help' in sys.argv:
+                print(CommandObject.getHelp())
+                exit(0)
+            else:                
+                result = CommandObject.execute()
+                exit(result)      
+    else:
+        print("Failed to run any commands")
 
-        if inputCommand: # Changed to camelCase
-            if inputCommand in commands: # Changed to camelCase
-                commandClass = commands[inputCommand] # Changed to camelCase
-                if '--help' in sys.argv:
-                    sys.stdout.write(commandClass.getHelp()) # Changed to camelCase
-                    sys.exit(0)
-                else:
-                    command = commandClass() # Changed to camelCase
-                    result = command.execute()
-                    sys.exit(result)  # Exit with result code
-            else:
-                sys.stdout.write("Failed to run any commands\n") # Use stdout
-                sys.exit(1) # Indicate failure
-        else:
-            sys.stdout.write("No command provided.\n") # Handle no input
-            sys.exit(1) # Indicate failure
 
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        sys.exit(1)
 
 if __name__ == "__main__":
     sys.exit(main())

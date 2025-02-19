@@ -22,24 +22,27 @@ class AbstractCommand(Command):
         #STEP1: Handling the Command Value
         args = sys.argv
         try:
-            startIndex = args.index(self.getAlias()) +1
+            startIndex = args.index(self.getAlias())
         except ValueError:
             raise Exception(f"Could not find alias {self.getAlias()}")
-        startIndex = self.getAlias()
-
+        #Get the index of class name
+        startIndex += 1
 
         #STEP2: Parsing Shell Arguments
+
         #Check if command is valid shape
         shellArgs = {}
-        if not (startIndex < len(args) and args[startIndex][0] != '-'):
+        #If 
+        if startIndex >= len(args) or args[startIndex].startswith('-'):
             if self.isCommandValueRequired():
                 raise Exception(f"{self.getAlias()}'s value is required.")
         else:
             self.argsMap[self.getAlias()] = args[startIndex]
             startIndex += 1
         #Map optional command
-        for i in range(startIndex, len(args)):
-            arg = args[i]
+        index = startIndex
+        while index < len(args):
+            arg = args[index]
 
             if arg[:2] == '--':
                 key = arg[2:]
@@ -50,11 +53,14 @@ class AbstractCommand(Command):
 
             shellArgs[key] = True
 
-            if i + 1 < len(args) and args[i + 1][0] != '-':
-                shellArgs[key] = args[i + 1]
-                i += 1
-
-
+            #If next command exist, go to next optional argument name
+            if index + 1 < len(args) and args[index + 1][0] != '-':
+                shellArgs[key] = args[index + 1]
+                index += 2
+            else:
+                shellArgs[key] = True      
+        
+        argument = self.getArguments()
         #STEP3: Check if shellArgs expected shape or not
         for argument in self.getArguments():
             #Get expected option
@@ -86,7 +92,7 @@ class AbstractCommand(Command):
         arguments:Argument = AbstractCommand.getArguments()
         if not arguments:
             return help_string
-
+ 
         help_string += "Arguments:\n"
 
         for i in range(len(arguments)):

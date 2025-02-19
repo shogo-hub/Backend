@@ -1,4 +1,4 @@
-from ..Exceptions.ReadAndParseEnvException import ReadAndParseEnvException
+from Exceptions.ReadAndParseEnvException import ReadAndParseEnvException
 from configparser import ConfigParser
 import os
 from configparser import ConfigParser, NoSectionError,NoOptionError
