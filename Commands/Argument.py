@@ -19,7 +19,7 @@ class Argument:
         
         return self.description
 
-    def description(self, description: str) -> 'Argument':
+    def setDescription(self, description: str) -> 'Argument':
         """Sets the description of the argument and returns the current instance."""
         
         self.description = description
@@ -30,7 +30,7 @@ class Argument:
         
         return self.required
 
-    def required(self, required: bool) -> 'Argument':
+    def setRequired(self, required: bool) -> 'Argument':
         """Sets whether the argument is required and returns the current instance."""
         
         self.required = required

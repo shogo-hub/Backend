@@ -14,8 +14,11 @@ class CodeGeneration(AbstractCommand):
     #Get argument
     @staticmethod
     def getArguments()->list:
+        resultObject = Argument('name')
+        resultObject.setDescription('Name of the file that is to be generated.')
+        resultObject.setRequired(False)
         return [
-            Argument('name').description('Name of the file that is to be generated.').required(False),
+            resultObject
         ]
 
     #Execute
@@ -35,9 +38,11 @@ class CodeGeneration(AbstractCommand):
         migrationContent = self.getMigrationContent(migrationName)
 
         # Define the path to save the migration file
-        path = os.path.join(os.path.dirname(__file__), "../../Database/Migrations", filename)
+        currentDir = os.path.dirname(__file__)
+        migrationPath = os.path.join(currentDir, '..', '..', 'Database', 'Migrations',filename)
+        
 
-        with open(path, 'w') as f:
+        with open(migrationPath, 'w') as f:
             f.write(migrationContent)
         
         self.log(f"Migration file {filename} has been generated!")

@@ -60,7 +60,7 @@ class AbstractCommand(Command):
             else:
                 shellArgs[key] = True      
         
-        argument = self.getArguments()
+        
         #STEP3: Check if shellArgs expected shape or not
         for argument in self.getArguments():
             #Get expected option
