@@ -11,6 +11,10 @@ class CodeGeneration(AbstractCommand):
     alias = 'code-gen'
     requiredCommandValue = True
 
+    def __init__(self):
+        super().__init__()
+
+
     #Get argument
     @staticmethod
     def getArguments()->list:
@@ -34,7 +38,7 @@ class CodeGeneration(AbstractCommand):
         #Generate migration file
 
     def generateMigrationFile(self, migrationName: str) -> None:
-        filename = f"{datetime.now().strftime('%Y-%m-%d')}_{int(time.time())}_{migrationName}.py"
+        filename = f"Migration_{datetime.now().strftime('%Y_%m_%d')}_{int(time.time())}_{migrationName}.py"
         migrationContent = self.getMigrationContent(migrationName)
 
         # Define the path to save the migration file

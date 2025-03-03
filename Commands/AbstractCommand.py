@@ -58,7 +58,9 @@ class AbstractCommand(Command):
                 shellArgs[key] = args[index + 1]
                 index += 2
             else:
-                shellArgs[key] = True      
+                shellArgs[key] = True
+                index +=1
+                  
         
         
         #STEP3: Check if shellArgs expected shape or not

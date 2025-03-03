@@ -5,8 +5,9 @@ from configparser import ConfigParser, NoSectionError,NoOptionError
 
 
 class Settings:
+    ENV_PATH = ".env"
     @staticmethod
-    def env(pair:str)->str:
+    def env()->str:
         """Get the environment setting Correspoinding to pair key"""
 
         # Create a ConfigParser object
@@ -20,16 +21,17 @@ class Settings:
             # Raise an exception if reading the file fails
             raise ReadAndParseEnvException(f"Failed to read {env_path}")
 
-        # By default, retrieve the option from the 'DEFAULT' section
-        section, option = 'DEFAULT', pair
 
         # If 'pair' contains a dot, split it into section and option
-        if '.' in pair:
-            section, option = pair.split('.', 1)
-
+        #if '.' in pair:
+            #section, option = pair.split('.', 1)
+        return config
+    
+        """
         try:
             # Retrieve the value from the specified section and option
             return config.get(section, option)
         except (NoSectionError, NoOptionError):
             # Raise an exception if the section or option does not exist
             raise ReadAndParseEnvException(f"'{pair}' not found in the environment file.")
+        """

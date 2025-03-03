@@ -5,7 +5,7 @@ import os
 
 
 
-#php console {program} {program_value} {--option1} {option1_value} {--option2} {option2_value} ... {--optionN} {optionN_value}
+#Command example Python console {program} {program_value} {--option1} {option1_value} {--option2} {option2_value} ... {--optionN} {optionN_value}
 
 def autoload(className):
     """Autoload classes from the 'Commands' directory."""
@@ -38,10 +38,10 @@ def main()->int:
     except ImportError:
         print("registry.py not found.")
         exit(1)
-    #Get alias from CLI
+    
+    #STEP1 : Get alias from CLI
     commandalias = sys.argv[1]
-    #STEP1 :  Parse command
-
+    
     #STEP2 : iterate class in registry
     for alias ,commands in registryCommands.items():
         #If sys alias is in registry

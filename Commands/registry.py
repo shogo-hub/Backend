@@ -1,7 +1,7 @@
 from .Programs.CodeGeneration import CodeGeneration
-from .Programs.Migrate import Migration
+from .Programs.Migrate import Migrate
 
 commands = {
-    Migration.getAlias(): Migration,
+    Migrate.getAlias(): Migrate,
     CodeGeneration.getAlias(): CodeGeneration,
 }

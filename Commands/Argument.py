@@ -41,7 +41,7 @@ class Argument:
         
         return self.allowAsShort  # Use the camelCase version
 
-    def allowAsShort(self, allow_as_short: bool) -> 'Argument':  # Changed to camelCase
+    def setAllowAsShort(self, allow_as_short: bool) -> 'Argument':  # Changed to camelCase
         """Sets whether the argument can be used as a short form and returns the current instance."""
         
         self.allowAsShort = allow_as_short  # Changed to camelCase
